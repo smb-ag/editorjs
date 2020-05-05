@@ -152,8 +152,8 @@ export default class BlockEvents extends Module {
       }
 
       Caret.setToBlock(
-        BlockManager.currentBlock,
-        index ? Caret.positions.END : Caret.positions.START,
+        BlockManager.nextBlock ?? BlockManager.currentBlock,
+        index ? Caret.positions.START : Caret.positions.END,
       );
 
       /** Close Toolbar */
