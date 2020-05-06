@@ -483,10 +483,10 @@ export default class UI extends Module {
       event.stopImmediatePropagation();
 
     } else if ((event.target as HTMLElement).nodeName === 'BODY' && BlockSelection.anyBlockFocused) {
-      BlockManager.removeFocusedBlocks();
+      const focusPositionIndex = BlockManager.removeFocusedBlocks();
 
       Caret.setToBlock(
-        BlockManager.nextBlock ?? BlockManager.currentBlock,
+        BlockManager.blocks?.[focusPositionIndex] ?? BlockManager.currentBlock,
         BlockManager.nextBlock ? Caret.positions.START : Caret.positions.END
       );
 
