@@ -391,6 +391,15 @@ export default class Block {
   }
 
   /**
+   * Returns True if it is Focues
+   *
+   * @returns {boolean}
+   */
+  public get focused(): boolean {
+    return this.holder.classList.contains(Block.CSS.focused);
+  }
+
+  /**
    * Set selected state
    * We don't need to mark Block as Selected when it is empty
    *

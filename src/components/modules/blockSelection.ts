@@ -85,6 +85,17 @@ export default class BlockSelection extends Module {
   }
 
   /**
+   * Flag that identifies any Block focus
+   *
+   * @returns {boolean}
+   */
+  public get anyBlockFocused(): boolean {
+    const { BlockManager } = this.Editor;
+
+    return BlockManager.blocks.some((block) => block.focused === true);
+  }
+
+  /**
    * Return selected Blocks array
    *
    * @returns {Block[]}
