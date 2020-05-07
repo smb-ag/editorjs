@@ -128,6 +128,10 @@ export default class BlockEvents extends Module {
       this.Editor.BlockSelection.clearSelection(event);
     }
     this.Editor.CrossBlockSelection.watchSelection(event);
+
+    if (this.Editor.BlockManager.currentBlock) {
+      this.Editor.BlockManager.currentBlock.currentInput = event.target as HTMLElement;
+    }
   }
 
   public deletePressed(event): void {
@@ -463,7 +467,7 @@ export default class BlockEvents extends Module {
      *
      * other case will handle as usual ARROW LEFT behaviour
      */
-    if (blockToMerge.name !== targetBlock.name || !targetBlock.mergeable) {
+    if (blockToMerge.name !== targetBlock.name || !targetBlock.mergeable()) {
       /** If target Block doesn't contain inputs or empty, remove it */
       if (targetBlock.inputs.length === 0 || targetBlock.isEmpty) {
         BlockManager.removeBlock(BlockManager.currentBlockIndex - 1);
@@ -527,17 +531,17 @@ export default class BlockEvents extends Module {
        * Default behaviour moves cursor by 1 character, we need to prevent it
        */
       event.preventDefault();
-    } else {
-      /**
-       * After caret is set, update Block input index
-       */
-      _.delay(() => {
-        /** Check currentBlock for case when user moves selection out of Editor */
-        if (this.Editor.BlockManager.currentBlock) {
-          this.Editor.BlockManager.currentBlock.updateCurrentInput();
-        }
-      }, 20)();
     }
+
+    /**
+     * After caret is set, update Block input index
+     */
+    _.delay(() => {
+      /** Check currentBlock for case when user moves selection out of Editor */
+      if (this.Editor.BlockManager.currentBlock) {
+        this.Editor.BlockManager.currentBlock.updateCurrentInput();
+      }
+    }, 20)();
 
     /**
      * Clear blocks selection by arrows
@@ -582,17 +586,17 @@ export default class BlockEvents extends Module {
        * Default behaviour moves cursor by 1 character, we need to prevent it
        */
       event.preventDefault();
-    } else {
-      /**
-       * After caret is set, update Block input index
-       */
-      _.delay(() => {
-        /** Check currentBlock for case when user ends selection out of Editor and then press arrow-key */
-        if (this.Editor.BlockManager.currentBlock) {
-          this.Editor.BlockManager.currentBlock.updateCurrentInput();
-        }
-      }, 20)();
     }
+
+    /**
+     * After caret is set, update Block input index
+     */
+    _.delay(() => {
+      /** Check currentBlock for case when user ends selection out of Editor and then press arrow-key */
+      if (this.Editor.BlockManager.currentBlock) {
+        this.Editor.BlockManager.currentBlock.updateCurrentInput();
+      }
+    }, 20)();
 
     /**
      * Clear blocks selection by arrows
