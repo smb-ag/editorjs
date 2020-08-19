@@ -18,7 +18,7 @@ export default class ModificationsObserver extends Module {
    *
    * @type {number}
    */
-  public static readonly DebounceTimer = 450;
+  public DebounceTimer = 450;
 
   /**
    * MutationObserver instance
@@ -38,7 +38,7 @@ export default class ModificationsObserver extends Module {
   private mutationDebouncer = _.debounce(() => {
     this.updateNativeInputs();
     this.config.onChange(this.Editor.API.methods);
-  }, ModificationsObserver.DebounceTimer);
+  }, this.DebounceTimer);
 
   /**
    * Array of native inputs in Blocks.
@@ -64,6 +64,9 @@ export default class ModificationsObserver extends Module {
    * @returns {Promise<void>}
    */
   public async prepare(): Promise<void> {
+    if (this?.config?.saverDebounce) {
+      this.DebounceTimer = this.config.saverDebounce;
+    }
     /**
      * wait till Browser render Editor's Blocks
      */

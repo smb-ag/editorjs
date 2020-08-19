@@ -69,6 +69,11 @@ export interface EditorConfig {
   i18n?: I18nConfig;
 
   /**
+   * Debounce time for Editor's MutationObserver
+   */
+  saverDebounce?: number;
+
+  /**
    * Fires when Editor is ready to work
    */
   onReady?(): void;
