@@ -395,6 +395,10 @@ export default class UI extends Module<UINodes> {
         this.backspacePressed(event);
         break;
 
+      case _.keyCodes.DELETE:
+        this.deletePressed(event);
+        break;
+
       case _.keyCodes.ESC:
         this.escapePressed(event);
         break;
@@ -448,14 +452,82 @@ export default class UI extends Module<UINodes> {
   private backspacePressed(event: KeyboardEvent): void {
     const { BlockManager, BlockSelection, Caret } = this.Editor;
 
-    /**
-     * If any block selected and selection doesn't exists on the page (that means no other editable element is focused),
-     * remove selected blocks
-     */
-    if (BlockSelection.anyBlockSelected && !Selection.isSelectionExists) {
+    if (BlockSelection.anyBlockSelected) {
       const selectionPositionIndex = BlockManager.removeSelectedBlocks();
 
-      Caret.setToBlock(BlockManager.insertDefaultBlockAtIndex(selectionPositionIndex, true), Caret.positions.START);
+      Caret.setToBlock(
+        selectionPositionIndex
+          ? BlockManager.insertDefaultBlockAtIndex(selectionPositionIndex, true)
+          : BlockManager.currentBlock,
+        Caret.positions.START
+      );
+
+      /** Clear selection */
+      BlockSelection.clearSelection(event);
+
+      /**
+       * Stop propagations
+       * Manipulation with BlockSelections is handled in global backspacePress because they may occur
+       * with CMD+A or RectangleSelection and they can be handled on document event
+       */
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+    } else if ((event.target as HTMLElement).nodeName === 'BODY' && BlockSelection.anyBlockFocused) {
+      BlockManager.removeFocusedBlocks();
+
+      Caret.setToBlock(BlockManager.currentBlock, Caret.positions.END);
+
+      /** Clear selection */
+      BlockSelection.clearSelection(event);
+
+      /**
+       * Stop propagations
+       * Manipulation with BlockSelections is handled in global backspacePress because they may occur
+       * with CMD+A or RectangleSelection and they can be handled on document event
+       */
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }
+  }
+
+  /**
+   * @param {KeyboardEvent} event - keyboard event
+   */
+  private deletePressed(event: KeyboardEvent): void {
+    const { BlockManager, BlockSelection, Caret } = this.Editor;
+
+    if (BlockSelection.anyBlockSelected) {
+      const selectionPositionIndex = BlockManager.removeSelectedBlocks();
+
+      Caret.setToBlock(
+        selectionPositionIndex
+          ? BlockManager.insertDefaultBlockAtIndex(selectionPositionIndex, true)
+          : BlockManager.currentBlock,
+        Caret.positions.START
+      );
+
+      /** Clear selection */
+      BlockSelection.clearSelection(event);
+
+      /**
+       * Stop propagations
+       * Manipulation with BlockSelections is handled in global backspacePress because they may occur
+       * with CMD+A or RectangleSelection and they can be handled on document event
+       */
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+    } else if ((event.target as HTMLElement).nodeName === 'BODY' && BlockSelection.anyBlockFocused) {
+      const focusPositionIndex = BlockManager.removeFocusedBlocks();
+
+      Caret.setToBlock(
+        BlockManager.blocks?.[focusPositionIndex] ?? BlockManager.currentBlock,
+        BlockManager.nextBlock ? Caret.positions.START : Caret.positions.END
+      );
 
       /** Clear selection */
       BlockSelection.clearSelection(event);
