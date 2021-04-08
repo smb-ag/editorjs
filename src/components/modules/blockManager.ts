@@ -442,6 +442,30 @@ export default class BlockManager extends Module {
   }
 
   /**
+   * Remove only focused Blocks
+   * and returns first Block index where started removing...
+   *
+   * @returns {number|undefined}
+   */
+  public removeFocusedBlocks(): number|undefined {
+    let firstFocusedBlockIndex;
+
+    /**
+     * Remove focused Blocks from the end
+     */
+    for (let index = this.blocks.length - 1; index >= 0; index--) {
+      if (!this.blocks[index].focused) {
+        continue;
+      }
+
+      this.removeBlock(index);
+      firstFocusedBlockIndex = index;
+    }
+
+    return firstFocusedBlockIndex;
+  }
+
+  /**
    * Remove only selected Blocks
    * and returns first Block index where started removing...
    *
