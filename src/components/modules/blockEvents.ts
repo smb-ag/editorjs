@@ -43,6 +43,10 @@ export default class BlockEvents extends Module {
         this.arrowLeftAndUp(event);
         break;
 
+      case _.keyCodes.DELETE:
+        this.deletePressed(event);
+        break;
+
       case _.keyCodes.TAB:
         this.tabPressed(event);
         break;
@@ -105,6 +109,75 @@ export default class BlockEvents extends Module {
      * Check if editor is empty on each keyup and add special css class to wrapper
      */
     this.Editor.UI.checkEmptiness();
+  }
+
+  /**
+   * Handle delete keydown on Block
+   *
+   * @param {KeyboardEvent} event - keydown
+   */
+  public deletePressed(event: KeyboardEvent): void {
+    const { BlockManager, BlockSelection, Caret } = this.Editor;
+    const currentBlock = BlockManager.currentBlock;
+    const tool = currentBlock.tool;
+
+    /**
+     * Check if Block should be removed by current Delete keydown
+     */
+    if (currentBlock.selected || (currentBlock.isEmpty && currentBlock.currentInput === currentBlock.lastInput)) {
+      event.preventDefault();
+
+      const index = BlockManager.currentBlockIndex;
+
+      if (BlockManager.nextBlock && BlockManager.nextBlock.inputs.length === 0) {
+        /** If next block doesn't contain inputs, remove it */
+        BlockManager.removeBlock(index + 1);
+      } else {
+        /** If block is empty, just remove it */
+        BlockManager.removeBlock();
+      }
+
+      Caret.setToBlock(
+        BlockManager.nextBlock ?? BlockManager.currentBlock,
+        index ? Caret.positions.START : Caret.positions.END
+      );
+
+      /** Close Toolbar */
+      this.Editor.Toolbar.close();
+
+      /** Clear selection */
+      BlockSelection.clearSelection(event);
+
+      return;
+    }
+
+    /**
+     * Don't handle Delete when Tool sets enableLineBreaks to true.
+     * Uses for Tools like <code> where line breaks should be handled by default behaviour.
+     *
+     * But if caret is at end of the block, we allow to remove it by delete
+     */
+    if (tool.isLineBreaksEnabled && !Caret.isAtEnd) {
+      return;
+    }
+
+    const isLastBlock = BlockManager.currentBlockIndex === BlockManager.blocks.length - 1;
+    const canMergeBlocks = Caret.isAtEnd &&
+      SelectionUtils.isCollapsed &&
+      currentBlock.currentInput === currentBlock.lastInput &&
+      !isLastBlock;
+
+    if (canMergeBlocks) {
+      /**
+       * preventing browser default behaviour
+       */
+      event.preventDefault();
+
+      /**
+       * Merge Blocks
+       */
+      this.mergeBlocks(true);
+    }
   }
 
   /**
@@ -337,12 +410,12 @@ export default class BlockEvents extends Module {
   }
 
   /**
-   * Merge current and previous Blocks if they have the same type
+   * Merge current and previous/next Blocks if they have the same type
    */
-  private mergeBlocks(): void {
+  private mergeBlocks(forward = false): void {
     const { BlockManager, Caret, Toolbar } = this.Editor;
-    const targetBlock = BlockManager.previousBlock;
-    const blockToMerge = BlockManager.currentBlock;
+    const targetBlock = forward ? BlockManager.currentBlock : BlockManager.previousBlock;
+    const blockToMerge = forward ? BlockManager.nextBlock : BlockManager.currentBlock;
 
     /**
      * Blocks that can be merged:
@@ -362,7 +435,7 @@ export default class BlockEvents extends Module {
         return;
       }
 
-      if (Caret.navigatePrevious()) {
+      if (forward ? Caret.navigateNext() : Caret.navigatePrevious()) {
         Toolbar.close();
       }
 

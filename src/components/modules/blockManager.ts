@@ -394,6 +394,9 @@ export default class BlockManager extends Module {
     const blockToMergeIndex = this._blocks.indexOf(blockToMerge);
 
     if (blockToMerge.isEmpty) {
+      this.removeBlock(blockToMergeIndex);
+      this.currentBlockIndex = this._blocks.indexOf(targetBlock);
+
       return;
     }
 
